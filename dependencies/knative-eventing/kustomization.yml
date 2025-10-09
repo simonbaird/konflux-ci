@@ -1,0 +1,7 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # renovate: datasource=git-refs depName=https://github.com/knative/eventing versioning=semver
+  - https://github.com/knative/eventing/releases/download/knative-v1.16.7/eventing.yaml
