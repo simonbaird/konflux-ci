@@ -20,3 +20,12 @@ spec:
       config:
         include:
           - '@redhat'
+        exclude:
+          - tasks.required_tasks_found:sast-snyk-check
+          - tasks.required_tasks_found:source-build
+          - source_image.exists
+          - hermetic_task.hermetic
+          - cve.cve_blockers
+      ruleData:
+        allowed_registry_prefixes:
+          - docker.io/redhat/ubi
