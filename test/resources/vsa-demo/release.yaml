@@ -1,0 +1,15 @@
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: ReleasePlan
+metadata:
+  labels:
+    release.appstudio.openshift.io/auto-release: "false"
+    release.appstudio.openshift.io/releasePlanAdmission: vsa-demo-rpa
+  name: vsa-demo-rp
+  namespace: user-ns2
+spec:
+  application: vsa-demo-app
+  # For demo purposes, we'll put the RPA in the same namespace.
+  # In reality it would be in a managed namespace, like rhtap-contract-tenant.
+  target: user-ns2
+  data: {}
