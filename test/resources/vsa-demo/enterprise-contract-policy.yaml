@@ -20,3 +20,10 @@ spec:
       config:
         include:
           - '@redhat'
+        exclude:
+          - hermetic_task.hermetic
+          - cve.cve_blockers
+          - tasks.required_tasks_found:sast-snyk-check
+      ruleData:
+        allowed_registry_prefixes:
+          - docker.io/redhat/ubi
