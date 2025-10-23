@@ -1,0 +1,22 @@
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: ReleasePlanAdmission
+metadata:
+  name: vsa-demo-rpa
+  namespace: user-ns2
+spec:
+  applications:
+    - vsa-demo-app
+  origin: user-ns2
+  data: {}
+  policy: vsa-demo-ecp
+
+  # Not planning to run this for the demo, but we need to have something here
+  pipeline:
+    pipelineRef:
+      params:
+        - name: url
+          value: https://example.com/not/real.git
+        - name: pathInRepo
+          value: pipelines/release-stuff.yaml
+      resolver: git
