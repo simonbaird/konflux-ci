@@ -49,6 +49,19 @@ deploy() {
     echo "📋 Setting up Namespace Lister..." >&2
     retry kubectl apply -k "${script_path}/konflux-ci/namespace-lister"
 
+    echo "🦫 Setting up Conforma Knative Service"
+    # Todo: I expect we'll stop using "default" namespace soon and hence won't
+    # need the sed replace. Note the --namespace flag is needed as well as the
+    # sed for the objects that don't explicitly define their namespace.
+    kustomize build "${script_path}/konflux-ci/conforma-knative-service" |
+      sed 's/namespace: default/namespace: conforma-knative-service/' |
+      kubectl apply --namespace=conforma-knative-service -f -
+
+    # Also we need to setup a signing key for the VSAs
+    COSIGN_PASSWORD="" cosign generate-key-pair "k8s://conforma-knative-service/vsa-signing-key"
+    # Todo: The above commands creates a cosign.pub file. Where do we put that
+    # so we can use it to verify the VSA sig later?
+
     echo "🎨 Deploying UI components..." >&2
     kubectl apply -k "${script_path}/konflux-ci/ui"
     if ! kubectl get secret oauth2-proxy-client-secret -n konflux-ui; then

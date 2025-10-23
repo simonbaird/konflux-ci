@@ -55,6 +55,8 @@ deploy() {
     deploy_smee
     echo "🛡️  Deploying Kyverno..." >&2
     deploy_kyverno
+    echo "📦 Deploying Knative Eventing..." >&2
+    deploy_knative_eventing
 }
 
 test_pvc_binding(){
@@ -150,6 +152,14 @@ deploy_kyverno() {
     # Wait for policy CRD to be installed. Don't need to wait for everything to be up
     sleep 5
     kubectl apply -k "${script_path}/dependencies/kyverno/policy"
+}
+
+deploy_knative_eventing() {
+    kubectl apply -k "${script_path}/dependencies/knative-eventing"
+    retry "kubectl wait --for=condition=Ready --timeout=240s -l app=eventing-controller -n knative-eventing pod" \
+          "Knative Eventing controller did not become available within the allocated time"
+    retry "kubectl wait --for=condition=Ready --timeout=240s -l app=eventing-webhook -n knative-eventing pod" \
+          "Knative Eventing webhook did not become available within the allocated time"
 }
 
 retry() {
