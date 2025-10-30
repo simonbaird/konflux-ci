@@ -8,3 +8,5 @@ resources:
   - image-repository.yaml
   - release-plan-admission.yaml
   - release.yaml
+  - vsa-signing-key.yaml
+  - vsa-public-key.yaml
