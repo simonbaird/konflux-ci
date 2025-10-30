@@ -1,0 +1,27 @@
+apiVersion: appstudio.redhat.com/v1beta2
+kind: IntegrationTestScenario
+metadata:
+  annotations:
+    test.appstudio.openshift.io/kind: enterprise-contract
+  labels:
+    test.appstudio.openshift.io/optional: "false"
+  name: vsa-demo-conforma-check
+  namespace: user-ns2
+spec:
+  application: vsa-demo-app
+  contexts:
+  - description: Application testing
+    name: application
+  params:
+  - name: POLICY_CONFIGURATION
+    value: user-ns2/vsa-demo-ecp
+  resolverRef:
+    params:
+    - name: url
+      value: https://github.com/simonbaird/konflux-build-definitions
+    - name: revision
+      value: conforma-vsa-its-poc
+    - name: pathInRepo
+      value: pipelines/enterprise-contract-vsa.yaml
+    resolver: git
+    resourceKind: pipeline

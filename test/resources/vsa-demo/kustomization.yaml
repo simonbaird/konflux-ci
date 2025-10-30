@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - application.yaml
   - component.yaml
+  - integration-test-scenario.yaml
   - enterprise-contract-policy.yaml
   - image-repository.yaml
   - release-plan-admission.yaml
