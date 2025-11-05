@@ -25,49 +25,70 @@ nl
 show-then-run 'podman run --rm $IMG_REF'
 
 #-----------------------------------------------------------------------------
-h1 "Pod logs for the conforma-knative-service"
-nl
+h1 "Logs for the Conforma ITS pipeline run"
 
-GET_POD_CMD='kubectl get pods --selector app=conforma-knative-service -n conforma-knative-service'
-show-then-run "$GET_POD_CMD"
-POD_NAME=$(eval "$GET_POD_CMD -o json | jq -r .items[0].metadata.name")
+GET_PIPELINE_CMD='tkn pipelinerun list -n user-ns2'
+show-then-run "$GET_PIPELINE_CMD --limit 1"
+PIPELINE_RUN=$(eval "$GET_PIPELINE_CMD -o jsonpath='{.items[0].metadata.name}'")
 
-pause-then-run 'kubectl logs $POD_NAME -n conforma-knative-service'
+pause-then-run 'tkn pipelinerun logs $PIPELINE_RUN -n user-ns2'
+
 
 #-----------------------------------------------------------------------------
-h1 "Task run logs for the triggered taskrun"
+h1 "Cosign download attestation shows two attestations"
 
-GET_TASK_CMD='tkn taskrun list -n conforma-knative-service'
-show-then-run "$GET_TASK_CMD --limit 1"
-TASK_RUN=$(eval "$GET_TASK_CMD -o jsonpath='{.items[0].metadata.name}'")
+show-msg "Notice there are two atts, one for the build pipeline run and one for the ITS pipeline run"
+nl
 
-pause-then-run 'tkn taskrun logs $TASK_RUN -n conforma-knative-service'
+show-then-run 'cosign download attestation $IMG_REF | cut -c -120'
+nl
+
+show-then-run 'cosign download attestation $IMG_REF | jq ".payload = \"...\"|.signatures = \"...\""'
+nl
+
+show-then-run 'cosign tree $IMG_REF'
+
+pause
+
+# Show the tasks list to demonstrate they're different. Use -s to slurp the separate documents into an array.
+# Not sure if the order is deterministic here, but hopefully it is..?
+show-then-run 'cosign download attestation $IMG_REF | jq -s -r ".[1]|.payload|@base64d|fromjson|.predicate.buildConfig.tasks[]|.name"'
+nl
+show-then-run 'cosign download attestation $IMG_REF | jq -s -r ".[0]|.payload|@base64d|fromjson|.predicate.buildConfig.tasks[]|.name"'
+nl
+
+#-----------------------------------------------------------------------------
+h1 "Extract VSA locations"
+
+show-msg "We create a task result with a mapping of images to vsa refs. Let's extract it."
+
+GET_VSA_MAP_CMD='cosign download attestation $IMG_REF |
+    jq -s ".[0]|.payload|@base64d|fromjson" |
+    jq .predicate.buildConfig |
+    jq ".tasks[]|select(.name==\"verify\").results[]|select(.name==\"VSA_MAP\").value|fromjson"'
+
+pause-then-run "$GET_VSA_MAP_CMD"
+
+# Continuing the assumption that we have just one component
+VSA_REF=$(eval "$GET_VSA_MAP_CMD | jq -r '.[\"$IMG_REF\"]'")
+VSA_UUID=${VSA_REF##*=}
+
+nl
+show-var VSA_UUID
 
 #-----------------------------------------------------------------------------
 h1 "Looking up the VSA in Rekor"
 
-show-msg "We can use the image digest to look up the Rekor entry"
-
-nl
-
 # Show which Rekor instance we're using
 REKOR_SERVER="https://rekor.sigstore.dev"
 show-var REKOR_SERVER
+nl
 
-pause-then-run 'rekor-cli search --sha $IMG_DIGEST --rekor_server $REKOR_SERVER'
+show-msg "Look at the full Rekor entry"
+pause-then-run 'rekor-cli get --uuid $VSA_UUID --rekor_server $REKOR_SERVER --format json | yq -P'
 
-# See what we can find in rekor for that digest
-REKOR_UUIDS=$(rekor-cli search --sha $IMG_DIGEST --format json | jq -r '.UUIDs[]')
-for uuid in $REKOR_UUIDS; do
-  nl
-  show-msg "Look at the full Rekor entry"
-  pause-then-run 'rekor-cli get --uuid $uuid --rekor_server $REKOR_SERVER --format json | yq -P'
-
-  nl
-  show-msg "Look at just the attestation"
-  pause-then-run 'rekor-cli get --uuid $uuid --rekor_server $REKOR_SERVER --format json | jq ".Attestation|fromjson" | yq -P'
-done
-
+show-msg "Look at just the attestation"
+pause-then-run 'rekor-cli get --uuid $VSA_UUID --rekor_server $REKOR_SERVER --format json | jq ".Attestation|fromjson" | yq -P'
 
 #-----------------------------------------------------------------------------
 h1 "Running Conforma"
