@@ -35,8 +35,11 @@ slow-title "Deploying image controller"
 slow-title "Deploying Quay secret"
 ./deploy-quay-push-secret.sh
 
-slow-title "Create VSA demo resources"
+slow-title "Creating VSA demo resources"
 kubectl apply -k "test/resources/vsa-demo"
+
+slow-title "Add push secret to integration test service account"
+./add-push-secret-to-integration-sa.sh
 
 slow-title "Ready"
 echo "https://localhost:9443/"
