@@ -1,0 +1,31 @@
+apiVersion: appstudio.redhat.com/v1beta2
+kind: IntegrationTestScenario
+metadata:
+  annotations:
+    test.appstudio.openshift.io/kind: enterprise-contract
+  labels:
+    test.appstudio.openshift.io/optional: "false"
+  name: vsa-demo-conforma-check
+  namespace: user-ns2
+spec:
+  application: vsa-demo-app
+  contexts:
+  - description: Application testing
+    name: application
+
+  params:
+  - name: POLICY_CONFIGURATION
+    value: user-ns2/vsa-demo-ecp
+  - name: VSA_SIGNING_KEY_SECRET_NAME
+    value: user-ns2/vsa-signing-key/cosign.key
+
+  resolverRef:
+    params:
+    - name: url
+      value: https://github.com/simonbaird/konflux-build-definitions
+    - name: revision
+      value: conforma-vsa-its-poc
+    - name: pathInRepo
+      value: pipelines/enterprise-contract-vsa.yaml
+    resolver: git
+    resourceKind: pipeline
