@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ns.yaml
+
+  # You should have https://github.com/conforma/knative-service checked
+  # out locally at this location. This is temporary for hacking. Later
+  # we'll publish something properly and use that instead.
+  - ../../../knative-service/config/base/
+
+patches:
+  # There's a ko url that I don't think we want to continue with,
+  # so this is probably temporary. Use the image from quay instead.
+  - target:
+      kind: Deployment
+      name: conforma-knative-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: quay.io/conforma/knative-service:latest

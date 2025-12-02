@@ -1,0 +1,10 @@
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Application
+metadata:
+  name: vsa-demo-app
+  namespace: user-ns2
+  annotations:
+    application.thumbnail: "1"
+spec:
+  displayName: vsa-demo-app
