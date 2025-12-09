@@ -1,0 +1,19 @@
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Component
+metadata:
+  name: vsa-demo-cmp
+  namespace: user-ns2
+  annotations:
+    build.appstudio.openshift.io/request: configure-pac
+    image.redhat.com/generate: '{"visibility": "public"}'
+    build.appstudio.openshift.io/pipeline: '{"name":"docker-build", "bundle": "latest"}'
+spec:
+  application: vsa-demo-app
+  componentName: vsa-demo-cmp
+  source:
+    git:
+      revision: main
+      url: https://github.com/simonbaird/ubi9-micro-cowsay.git
+      dockerfileUrl: Containerfile
+      context: ./
