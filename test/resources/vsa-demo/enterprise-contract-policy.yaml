@@ -1,0 +1,31 @@
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: EnterpriseContractPolicy
+metadata:
+  name: vsa-demo-ecp
+  namespace: user-ns2
+spec:
+  description: 'Example ECP'
+  publicKey: 'k8s://openshift-pipelines/public-key'
+  sources:
+    - name: Release Policies
+      data:
+        - github.com/release-engineering/rhtap-ec-policy//data
+        - oci::quay.io/konflux-ci/tekton-catalog/data-acceptable-bundles:latest
+        - oci::quay.io/konflux-ci/konflux-vanguard/data-acceptable-bundles:latest
+        - oci::quay.io/konflux-ci/integration-service-catalog/data-acceptable-bundles:latest
+      policy:
+        - oci::quay.io/conforma/release-policy:konflux
+      volatileConfig: {}
+      config:
+        include:
+          - '@redhat'
+        exclude:
+          - tasks.required_tasks_found:sast-snyk-check
+          - tasks.required_tasks_found:source-build
+          - source_image.exists
+          - hermetic_task.hermetic
+          - cve.cve_blockers
+      ruleData:
+        allowed_registry_prefixes:
+          - docker.io/redhat/ubi

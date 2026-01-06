@@ -87,6 +87,8 @@ deploy() {
     deploy_kyverno
     echo "📋 Deploying Konflux Info..." >&2
     deploy_konflux_info
+    echo "📦 Deploying Knative Eventing..." >&2
+    deploy_knative_eventing
 }
 
 test_pvc_binding(){
@@ -187,6 +189,14 @@ deploy_konflux_info() {
         return 0
     fi
     kubectl apply -k "${script_path}/dependencies/konflux-info"
+}
+
+deploy_knative_eventing() {
+    kubectl apply -k "${script_path}/dependencies/knative-eventing"
+    retry "kubectl wait --for=condition=Ready --timeout=240s -l app=eventing-controller -n knative-eventing pod" \
+          "Knative Eventing controller did not become available within the allocated time"
+    retry "kubectl wait --for=condition=Ready --timeout=240s -l app=eventing-webhook -n knative-eventing pod" \
+          "Knative Eventing webhook did not become available within the allocated time"
 }
 
 retry() {

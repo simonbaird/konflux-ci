@@ -49,6 +49,9 @@ deploy() {
     echo "📋 Setting up Namespace Lister..." >&2
     retry kubectl apply -k "${script_path}/konflux-ci/namespace-lister"
 
+    echo "🦫 Setting up Conforma Knative Service"
+    kubectl apply -k "${script_path}/konflux-ci/conforma-knative-service"
+
     echo "🎨 Deploying UI components..." >&2
     kubectl apply -k "${script_path}/konflux-ci/ui"
     if ! kubectl get secret oauth2-proxy-client-secret -n konflux-ui; then
